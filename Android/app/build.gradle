@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 32
 
     defaultConfig {
         applicationId "com.kilomelo.pa"
         minSdkVersion 22
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 89
         versionName "8.9"
     }
@@ -74,5 +74,5 @@ dependencies {
 
     // unity
     implementation project(':unityLibrary')
-    implementation files('../unityLibrary/libs/unity-classes.jar')
+    implementation fileTree(dir: project(':unityLibrary').getProjectDir().toString() + ('\\libs'), include: ['*.jar'])
 }
