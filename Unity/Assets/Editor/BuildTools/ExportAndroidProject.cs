@@ -61,7 +61,7 @@ namespace BaseProject.Editor
             PlayerSettings.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
             PlayerSettings.SetStackTraceLogType(LogType.Error, StackTraceLogType.None);
             PlayerSettings.SetStackTraceLogType(LogType.Exception, StackTraceLogType.Full);
-            PlayerSettings.SplashScreen.show = false;
+            // PlayerSettings.SplashScreen.show = false;
             
             var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             
