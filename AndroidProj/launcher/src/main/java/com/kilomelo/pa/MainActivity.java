@@ -5,7 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.unity3d.player.MultiWindowSupport;
 import com.unity3d.player.UnityPlayer;
