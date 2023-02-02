@@ -1,1 +1,4 @@
 ﻿.idea
+*.log
+AndroidProj/unityLibrary
+Android/unityLibrary

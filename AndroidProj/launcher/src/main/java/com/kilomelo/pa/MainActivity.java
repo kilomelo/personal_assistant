@@ -120,6 +120,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    public void testMethod(String param)
+    {
+        Log.i("MainActivity", "testMethod, param: " + param);
+    }
+    public static void testMethodStatic(String param)
+    {
+        Log.i("MainActivity", "testMethodStatic, param: " + param);
+    }
+    public String testString = "orig test string";
+    public static String testStaticString = "orig test static string";
     // For some reason the multiple keyevent type is not supported by the ndk.
     // Force event injection by overriding dispatchKeyEvent().
 //    @Override public boolean dispatchKeyEvent(KeyEvent event)
