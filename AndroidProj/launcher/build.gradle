@@ -20,13 +20,12 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
 
     // 权限请求框架：https://github.com/getActivity/XXPermissions
-//    implementation 'com.github.getActivity:XXPermissions:16.2'
-//
-//    // 标题栏框架：https://github.com/getActivity/TitleBar
-//    implementation 'com.github.getActivity:TitleBar:9.6'
-//
-//    // 吐司框架：https://github.com/getActivity/ToastUtils
-//    implementation 'com.github.getActivity:ToastUtils:11.2'
+    implementation 'com.github.getActivity:XXPermissions:16.2'
+
+    // 标题栏框架：https://github.com/getActivity/TitleBar
+    implementation 'com.github.getActivity:TitleBar:9.6'
+    // 吐司框架：https://github.com/getActivity/ToastUtils
+    implementation 'com.github.getActivity:ToastUtils:11.2'
 
     // 内存泄漏捕捉：https://github.com/square/leakcanary
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
