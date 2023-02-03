@@ -5,8 +5,6 @@ android {
 
     defaultConfig {
         minSdkVersion 22
-        versionCode 89
-        versionName "8.9"
     }
 
     // 支持 JDK 1.8
@@ -14,6 +12,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.hjq.xtoast'
 
     android.libraryVariants.all { variant ->
         // aar 输出文件名配置
