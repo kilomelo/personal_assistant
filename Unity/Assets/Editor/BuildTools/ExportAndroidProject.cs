@@ -13,9 +13,9 @@ namespace BaseProject.Editor
         // 启动场景
         private static string _startScene = "Assets/Scenes/main.unity";
         // 安卓工程导出临时目录
-        private static string _exportProjectTempDirRelativePath = "Export/AndroidProj";
+        private static string _exportProjectTempDirRelativePath = "Export/Android";
         // unity lib 拷贝目标目录
-        private static string _androidProjectRelativePath = "../AndroidProj";
+        private static string _androidProjectRelativePath = "../Android";
 
         [MenuItem("Build/Export android project %#m", priority = 0)]
         public static void Export()
