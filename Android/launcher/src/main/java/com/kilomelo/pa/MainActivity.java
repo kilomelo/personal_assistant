@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FrameLayout fm;
     private UnityPlayer mUnityPlayer;
 
+    private UnityFloatingWindow mUnityFloatingWindow;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button).setOnClickListener(this);
         findViewById(R.id.showUFWBtn).setOnClickListener(this);
 
-        fm = findViewById(R.id.fm);
         mUnityPlayer = new UnityPlayer(this);
+
+        fm = findViewById(R.id.fm);
         fm.addView(mUnityPlayer);
     }
 
@@ -156,15 +159,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else if (viewId == R.id.showUFWBtn)
         {
             Log.i(TAG, "show unity float window button clicked");
-            showGlobalUnityFloatWindow(getApplication());
+            startUnityGlobalFloatingWindow(getApplication());
         }
     }
-
-    public void showGlobalUnityFloatWindow(Application application) {
+    public void stopUnityGlobalFloatingWindow() {
         DebugUtils.MethodLog();
-        UnityFloatWindow ufw = new UnityFloatWindow(application);
+        if (null == mUnityFloatingWindow) {
+            return;
+        }
+        if (null == mUnityPlayer) {
+            return;
+        }
+        mUnityPlayer.pause();
+
+        if(mUnityPlayer.getParent() != null)
+        {
+            Log.d(TAG, "remove unity player from parent, parent: " + mUnityPlayer.getParent().toString());
+            ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
+        }
+
+        fm = findViewById(R.id.fm);
+        fm.addView(mUnityPlayer);
+        mUnityFloatingWindow.cancel();
+        mUnityPlayer.resume();
+    }
+
+    public void startUnityGlobalFloatingWindow(Application application) {
+        DebugUtils.MethodLog();
+        mUnityFloatingWindow = new UnityFloatingWindow(application);
         // 传入 Application 表示这个是一个全局的 Toast
-        ufw.setContentView(R.layout.window_hint)
+        mUnityFloatingWindow.setContentView(R.layout.window_hint)
                 .setGravity(Gravity.END | Gravity.BOTTOM)
 //                .setYOffset(200)
 //                .setText(android.R.id.message, "Unity全局浮窗")
@@ -184,17 +208,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.d(TAG, "remove unity player from parent, parent: " + mUnityPlayer.getParent().toString());
             ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
         }
-        ViewGroup decorView = (ViewGroup)ufw.getDecorView();
+        ViewGroup decorView = (ViewGroup)mUnityFloatingWindow.getDecorView();
         if (null == decorView)
         {
             Log.e(TAG, "decorView of xtoast is null");
         }
         else decorView.addView(mUnityPlayer);
         mUnityPlayer.resume();
-        ufw.setHeight(200);
-        ufw.setWidth(200);
+        mUnityFloatingWindow.setHeight(400);
+        mUnityFloatingWindow.setWidth(400);
 
-        ufw.show();
+        mUnityFloatingWindow.show();
 
     }
 
