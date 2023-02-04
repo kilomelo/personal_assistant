@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -40,11 +41,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.button2).setOnClickListener(this);
         findViewById(R.id.button).setOnClickListener(this);
+        findViewById(R.id.showUFWBtn).setOnClickListener(this);
 
         fm = findViewById(R.id.fm);
         mUnityPlayer = new UnityPlayer(this);
         fm.addView(mUnityPlayer);
-//        UnityPlayer.UnitySendMessage("Car02_Door_FrontLeft", "getDoorLock", "1");
     }
 
     //region life cycle callback
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         DebugUtils.MethodLog();
 
-        mUnityPlayer.destroy();
+        if (null != mUnityPlayer) mUnityPlayer.destroy();
         super.onDestroy();
     }
 
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!MultiWindowSupport.getAllowResizableWindow(this))
             return;
 
-        mUnityPlayer.pause();
+        if (null != mUnityPlayer) mUnityPlayer.pause();
     }
 
     @Override protected void onStart()
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!MultiWindowSupport.getAllowResizableWindow(this))
             return;
 
-        mUnityPlayer.resume();
+        if (null != mUnityPlayer) mUnityPlayer.resume();
     }
 
     @Override protected void onPause()
@@ -86,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (MultiWindowSupport.getAllowResizableWindow(this))
             return;
 
-        mUnityPlayer.pause();
+        if (null != mUnityPlayer) mUnityPlayer.pause();
     }
 
     @Override protected void onResume()
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (MultiWindowSupport.getAllowResizableWindow(this))
             return;
 
-        mUnityPlayer.resume();
+        if (null != mUnityPlayer) mUnityPlayer.resume();
     }
 
     @Override public void onLowMemory()
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onLowMemory();
         DebugUtils.MethodLog();
 
-        mUnityPlayer.lowMemory();
+        if (null != mUnityPlayer) mUnityPlayer.lowMemory();
     }
 
     @Override public void onTrimMemory(int level)
@@ -115,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (level == TRIM_MEMORY_RUNNING_CRITICAL)
         {
-            mUnityPlayer.lowMemory();
+            if (null != mUnityPlayer) mUnityPlayer.lowMemory();
         }
     }
 
@@ -125,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onConfigurationChanged(newConfig);
         DebugUtils.MethodLog();
 
-        mUnityPlayer.configurationChanged(newConfig);
+        if (null != mUnityPlayer) mUnityPlayer.configurationChanged(newConfig);
     }
 
     // Notify Unity of the focus change.
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onWindowFocusChanged(hasFocus);
         DebugUtils.MethodLog();
 
-        mUnityPlayer.windowFocusChanged(hasFocus);
+        if (null != mUnityPlayer) mUnityPlayer.windowFocusChanged(hasFocus);
     }
     //endregion
 
@@ -145,14 +146,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int viewId = view.getId();
         if (viewId == R.id.button2) {
             Log.i(TAG, "button2 clicked");
-            mUnityPlayer.UnitySendMessage("AndroidBridge", "TestSetLabelText", "text from android");
+            if (null != mUnityPlayer) mUnityPlayer.UnitySendMessage("AndroidBridge", "TestSetLabelText", "text from android");
         }
         else if (viewId == R.id.button)
         {
             Log.i(TAG, "button clicked");
             testXDialogCase(view);
         }
+        else if (viewId == R.id.showUFWBtn)
+        {
+            Log.i(TAG, "show unity float window button clicked");
+            showGlobalUnityFloatWindow(getApplication());
+        }
     }
+
+    public void showGlobalUnityFloatWindow(Application application) {
+        DebugUtils.MethodLog();
+        UnityFloatWindow ufw = new UnityFloatWindow(application);
+        // 传入 Application 表示这个是一个全局的 Toast
+        ufw.setContentView(R.layout.window_hint)
+                .setGravity(Gravity.END | Gravity.BOTTOM)
+//                .setYOffset(200)
+//                .setText(android.R.id.message, "Unity全局浮窗")
+                // 设置指定的拖拽规则
+                .setDraggable(new MovingDraggable())
+                .setOnClickListener(android.R.id.icon, new XToast.OnClickListener<ImageView>() {
+
+                    @Override
+                    public void onClick(XToast<?> toast, ImageView view) {
+                        ToastUtils.show("我被点击了");
+//                        toast.cancel();
+                    }
+                });
+        mUnityPlayer.pause();
+        if(mUnityPlayer.getParent() != null)
+        {
+            Log.d(TAG, "remove unity player from parent, parent: " + mUnityPlayer.getParent().toString());
+            ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
+        }
+        ViewGroup decorView = (ViewGroup)ufw.getDecorView();
+        if (null == decorView)
+        {
+            Log.e(TAG, "decorView of xtoast is null");
+        }
+        else decorView.addView(mUnityPlayer);
+        mUnityPlayer.resume();
+        ufw.setHeight(200);
+        ufw.setWidth(200);
+
+        ufw.show();
+
+    }
+
     //region test case
     static int idx = 0;
     private void testXDialogCase(View v){
@@ -332,6 +377,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setContentView(R.layout.window_hint)
                 .setGravity(Gravity.END | Gravity.BOTTOM)
                 .setYOffset(200)
+                .setText(android.R.id.message, "全局弹窗")
                 // 设置指定的拖拽规则
                 .setDraggable(new SpringDraggable())
                 .setOnClickListener(android.R.id.icon, new XToast.OnClickListener<ImageView>() {
