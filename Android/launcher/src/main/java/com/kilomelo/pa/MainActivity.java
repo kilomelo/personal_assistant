@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        UnityPlayer.UnitySendMessage("Car02_Door_FrontLeft", "getDoorLock", "1");
     }
 
-    // Quit Unity
+    //region life cycle callback
     @Override protected void onDestroy ()
     {
         DebugUtils.MethodLog();
@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityPlayer.resume();
     }
 
-    // Pause Unity
     @Override protected void onPause()
     {
         super.onPause();
@@ -90,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityPlayer.pause();
     }
 
-    // Resume Unity
     @Override protected void onResume()
     {
         super.onResume();
@@ -102,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityPlayer.resume();
     }
 
-    // Low Memory Unity
     @Override public void onLowMemory()
     {
         super.onLowMemory();
@@ -111,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityPlayer.lowMemory();
     }
 
-    // Trim Memory Unity
     @Override public void onTrimMemory(int level)
     {
         super.onTrimMemory(level);
@@ -140,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mUnityPlayer.windowFocusChanged(hasFocus);
     }
+    //endregion
 
     @Override
     public void onClick(View view) {
@@ -156,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             testXDialogCase(view);
         }
     }
+    //region test case
     static int idx = 0;
     private void testXDialogCase(View v){
 
@@ -363,6 +361,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     public String testString = "orig test string";
     public static String testStaticString = "orig test static string";
+    //endregion
     // For some reason the multiple keyevent type is not supported by the ndk.
     // Force event injection by overriding dispatchKeyEvent().
 //    @Override public boolean dispatchKeyEvent(KeyEvent event)
