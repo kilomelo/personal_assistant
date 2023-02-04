@@ -52,6 +52,7 @@ namespace BaseProject.Editor
             EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, useMono ? ScriptingImplementation.Mono2x : ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = useMono ? AndroidArchitecture.ARMv7 : AndroidArchitecture.ARM64;
+            PlayerSettings.preserveFramebufferAlpha = true;
 
             var prevStackTraceLog = PlayerSettings.GetStackTraceLogType(LogType.Log);
             var prevStackTraceWarning = PlayerSettings.GetStackTraceLogType(LogType.Warning);

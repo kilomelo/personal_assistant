@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class TestCommunication : MonoBehaviour
 {
     public Button testButton;
+    public Button testButton2;
     public TextMeshProUGUI testLabel;
     // Start is called before the first frame update
     void Start()
@@ -17,6 +18,12 @@ public class TestCommunication : MonoBehaviour
             using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             using AndroidJavaObject jo = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
             jo.Call("runOnUiThread", new AndroidJavaRunnable(stopUnityGlobalFloatingWindow));
+        });
+        testButton2.onClick.AddListener(() =>
+        {
+            Debug.Log("UnityTest on testBtn2 click");
+            Camera.main.clearFlags = CameraClearFlags.SolidColor;
+            Camera.main.backgroundColor = new Color(0f, 0f, 0f, 0f);
         });
     }
 
