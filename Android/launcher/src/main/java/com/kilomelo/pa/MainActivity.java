@@ -30,9 +30,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static String TAG = MainActivity.class.getSimpleName();
-    private FrameLayout fm;
+    private FrameLayout mMainUnityWindow;
     private UnityPlayer mUnityPlayer;
-
     private UnityFloatingWindow mUnityFloatingWindow;
 
     @Override
@@ -47,8 +46,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mUnityPlayer = new UnityPlayer(this);
 
-        fm = findViewById(R.id.fm);
-        fm.addView(mUnityPlayer);
+        mMainUnityWindow = findViewById(R.id.fm);
+        mMainUnityWindow.addView(mUnityPlayer);
     }
 
     //region life cycle callback
@@ -89,8 +88,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (MultiWindowSupport.getAllowResizableWindow(this))
             return;
-
-        if (null != mUnityPlayer) mUnityPlayer.pause();
+        // 只有在非浮窗状态下才暂停Unity
+        if (null == mUnityFloatingWindow) {
+            if (null != mUnityPlayer) mUnityPlayer.pause();
+        }
     }
 
     @Override protected void onResume()
@@ -137,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         super.onWindowFocusChanged(hasFocus);
         DebugUtils.MethodLog();
+        Log.d(TAG, "hasFocus: " + hasFocus);
 
         if (null != mUnityPlayer) mUnityPlayer.windowFocusChanged(hasFocus);
     }
@@ -160,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         {
             Log.i(TAG, "show unity float window button clicked");
             startUnityGlobalFloatingWindow(getApplication());
+            moveTaskToBack(true);
         }
     }
     public void stopUnityGlobalFloatingWindow() {
@@ -178,10 +181,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
         }
 
-        fm = findViewById(R.id.fm);
-        fm.addView(mUnityPlayer);
+        mMainUnityWindow = findViewById(R.id.fm);
+        mMainUnityWindow.addView(mUnityPlayer);
         mUnityFloatingWindow.cancel();
+        mUnityFloatingWindow = null;
         mUnityPlayer.resume();
+    }
+
+    public void callFromUnitySync(String methodName, String params)
+    {
+        Log.d(TAG, "callFromUnitySync, methodName: " + methodName + " params: " + params);
     }
 
     public void startUnityGlobalFloatingWindow(Application application) {

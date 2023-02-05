@@ -22,8 +22,12 @@ public class TestCommunication : MonoBehaviour
         testButton2.onClick.AddListener(() =>
         {
             Debug.Log("UnityTest on testBtn2 click");
-            Camera.main.clearFlags = CameraClearFlags.SolidColor;
-            Camera.main.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            // Camera.main.clearFlags = CameraClearFlags.SolidColor;
+            // Camera.main.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            AndroidBridge.Instance.CallSync("stopUnityGlobalFloatingWindow",
+                "floatArg", 1f,
+                "intArg", 3,
+                "stringArg", "txxt");
         });
     }
 
