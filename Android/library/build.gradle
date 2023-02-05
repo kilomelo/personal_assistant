@@ -4,7 +4,7 @@ android {
     compileSdkVersion 32
 
     defaultConfig {
-        minSdkVersion 22
+        minSdkVersion 24
     }
 
     // 支持 JDK 1.8

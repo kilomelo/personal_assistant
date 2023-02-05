@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
 import com.hjq.toast.ToastUtils;
 import com.hjq.xtoast.XToast;
 import com.hjq.xtoast.draggable.MovingDraggable;
@@ -23,6 +24,7 @@ import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
 
+import com.kilomelo.pa.unitybridge.UnityBridge;
 import com.unity3d.player.MultiWindowSupport;
 import com.unity3d.player.UnityPlayer;
 
@@ -165,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             moveTaskToBack(true);
         }
     }
-    public void stopUnityGlobalFloatingWindow() {
+    private void stopUnityGlobalFloatingWindow() {
         DebugUtils.MethodLog();
         if (null == mUnityFloatingWindow) {
             return;
@@ -188,12 +190,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityPlayer.resume();
     }
 
-    public void callFromUnitySync(String methodName, String params)
+    private void callFromUnitySync(String methodName, String params)
     {
         Log.d(TAG, "callFromUnitySync, methodName: " + methodName + " params: " + params);
+//        UnityBridge.
     }
 
-    public void startUnityGlobalFloatingWindow(Application application) {
+    private void startUnityGlobalFloatingWindow(Application application) {
         DebugUtils.MethodLog();
         mUnityFloatingWindow = new UnityFloatingWindow(application);
         // 传入 Application 表示这个是一个全局的 Toast
@@ -232,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //region test case
-    static int idx = 0;
+    private static int idx = 0;
     private void testXDialogCase(View v){
 
         Log.d(TAG, "testXToastCase, idx: " + idx);
@@ -404,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 显示全局弹窗
      */
-    public static void showGlobalWindow(Application application) {
+    private static void showGlobalWindow(Application application) {
         // 传入 Application 表示这个是一个全局的 Toast
         new XToast<>(application)
                 .setContentView(R.layout.window_hint)
@@ -430,16 +433,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    public void testMethod(String param)
+    private void testMethod(String param)
     {
         Log.i(TAG, "testMethod, param: " + param);
     }
-    public static void testMethodStatic(String param)
+    private static void testMethodStatic(String param)
     {
         Log.i(TAG, "testMethodStatic, param: " + param);
     }
-    public String testString = "orig test string";
-    public static String testStaticString = "orig test static string";
+    private String testString = "orig test string";
+    private static String testStaticString = "orig test static string";
     //endregion
     // For some reason the multiple keyevent type is not supported by the ndk.
     // Force event injection by overriding dispatchKeyEvent().

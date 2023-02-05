@@ -9,6 +9,8 @@ dependencies {
     implementation 'android.arch.navigation:navigation-fragment:1.0.0'
     implementation 'android.arch.navigation:navigation-ui:1.0.0'
 
+    implementation 'com.google.code.gson:gson:2.10.1'
+
     // 依赖 libs 目录下所有的 jar 和 aar 包
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
 
@@ -43,7 +45,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 22
+        minSdkVersion 24
         targetSdkVersion 32
         applicationId 'com.kilomelo.pa'
         ndk {

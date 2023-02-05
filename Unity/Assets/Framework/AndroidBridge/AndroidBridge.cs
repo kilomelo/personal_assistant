@@ -73,6 +73,7 @@ public class AndroidBridge : MonoBehaviour
             // }
             // Debug.Log($"{TAG} CallSync, jsonData: {jsonData}");
             #if UNITY_ANDROID && !UNITY_EDITOR
+            // _unityPlayerJavaObject.Call("callFromUnitySync", methodName, jsonStr);
             _unityPlayerJavaObject.Call("callFromUnitySync", methodName, jsonStr);
             #endif
         }
