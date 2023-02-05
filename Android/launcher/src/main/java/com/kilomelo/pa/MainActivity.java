@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -46,10 +47,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button).setOnClickListener(this);
         findViewById(R.id.showUFWBtn).setOnClickListener(this);
 
-        mUnityPlayer = new UnityPlayer(this);
 
-        mMainUnityWindow = findViewById(R.id.fm);
-        mMainUnityWindow.addView(mUnityPlayer);
+//        mMainUnityWindow = findViewById(R.id.fm);
+//        mMainUnityWindow.addView(mUnityPlayer);
     }
 
     //region life cycle callback
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         {
             Log.i(TAG, "show unity float window button clicked");
             startUnityGlobalFloatingWindow(getApplication());
-            moveTaskToBack(true);
+//            moveTaskToBack(true);
         }
     }
     private void stopUnityGlobalFloatingWindow() {
@@ -201,34 +201,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityFloatingWindow = new UnityFloatingWindow(application);
         // 传入 Application 表示这个是一个全局的 Toast
         mUnityFloatingWindow.setContentView(R.layout.window_hint)
-                .setGravity(Gravity.END | Gravity.BOTTOM)
+                .setGravity(Gravity.END | Gravity.BOTTOM);
 //                .setYOffset(200)
 //                .setText(android.R.id.message, "Unity全局浮窗")
                 // 设置指定的拖拽规则
-                .setDraggable(new MovingDraggable())
-                .setOnClickListener(android.R.id.icon, new XToast.OnClickListener<ImageView>() {
-
-                    @Override
-                    public void onClick(XToast<?> toast, ImageView view) {
-                        ToastUtils.show("我被点击了");
-//                        toast.cancel();
-                    }
-                });
-        mUnityPlayer.pause();
-        if(mUnityPlayer.getParent() != null)
-        {
-            Log.d(TAG, "remove unity player from parent, parent: " + mUnityPlayer.getParent().toString());
-            ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
-        }
-        ViewGroup decorView = (ViewGroup)mUnityFloatingWindow.getDecorView();
-        if (null == decorView)
-        {
-            Log.e(TAG, "decorView of xtoast is null");
-        }
-        else decorView.addView(mUnityPlayer);
-        mUnityPlayer.resume();
-        mUnityFloatingWindow.setHeight(400);
-        mUnityFloatingWindow.setWidth(400);
+//                .setDraggable(new MovingDraggable());
+//                .setOnTouchListener(new XToast.OnTouchListener<ImageView>() {
+//
+//                    @Override
+//                    public void onClick(XToast<?> toast, ImageView view) {
+//                        Log.i(TAG, "unity view clicked");
+//                        ToastUtils.show("我被点击了");
+////                        toast.cancel();
+//                    }
+//                });
+//        mUnityPlayer.pause();
+//        if(mUnityPlayer.getParent() != null)
+//        {
+//            Log.d(TAG, "remove unity player from parent, parent: " + mUnityPlayer.getParent().toString());
+//            ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
+//        }
+//        ViewGroup decorView = (ViewGroup)mUnityFloatingWindow.getDecorView();
+//        if (null == decorView)
+//        {
+//            Log.e(TAG, "decorView of xtoast is null");
+//        }
+//        else decorView.addView(mUnityPlayer);
+//        mUnityPlayer.resume();
+//        mUnityFloatingWindow.setHeight(400);
+//        mUnityFloatingWindow.setWidth(400);
+//        decorView.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                Log.d(TAG, "unity view touched");
+//
+//                return false;
+//            }
+//        });
 
         mUnityFloatingWindow.show();
 
