@@ -13,9 +13,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.hjq.toast.ToastUtils;
@@ -25,7 +23,6 @@ import com.hjq.xtoast.draggable.SpringDraggable;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
-
 import com.kilomelo.pa.unitybridge.UnityBridge;
 import com.unity3d.player.MultiWindowSupport;
 import com.unity3d.player.UnityPlayer;
@@ -39,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private UnityFloatingWindow mUnityFloatingWindow;
 //    private int mTaskId;
     private String mFullActivityName;
+
+    private UnityBridge mUnityBridge;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.showUFWBtn).setOnClickListener(this);
 
         mUnityPlayer = new UnityPlayer(this);
+        mUnityBridge = new UnityBridge();
 
         mMainUnityWindow = findViewById(R.id.fm);
         mMainUnityWindow.addView(mUnityPlayer);
@@ -57,13 +57,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFullActivityName = getPackageName().concat("/").concat(getClass().getName());
         Log.d(TAG, "mFullActivityName: " + mFullActivityName);
 //        mTaskId = getTaskId();
+
+        UnityBridge.getInstance().init(mUnityPlayer);
+        UnityBridge.getInstance().register("testMethod", this::testMethod);
+        UnityBridge.getInstance().register("stopUnityGlobalFloatingWindow", this::stopUnityGlobalFloatingWindow);
     }
 
     //region life cycle callback
     @Override protected void onDestroy ()
     {
         DebugUtils.MethodLog();
-
+        UnityBridge.getInstance().unregister("testMethod");
         if (null != mUnityPlayer) mUnityPlayer.destroy();
         super.onDestroy();
     }
@@ -193,12 +197,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void callFromUnitySync(String methodName, String params)
-    {
-        Log.d(TAG, "callFromUnitySync, methodName: " + methodName + " params: " + params);
-//        UnityBridge.
-    }
-
     private void startUnityGlobalFloatingWindow(Application application) {
         DebugUtils.MethodLog();
         mUnityFloatingWindow = new UnityFloatingWindow(application);
@@ -236,15 +234,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityFloatingWindow.show();
     }
 
-    private void stopUnityGlobalFloatingWindow() {
+    private String stopUnityGlobalFloatingWindow(String param) {
         DebugUtils.MethodLog();
 
         moveToFront();
         if (null == mUnityFloatingWindow) {
-            return;
+            return null;
         }
         if (null == mUnityPlayer) {
-            return;
+            return null;
         }
         mUnityPlayer.pause();
 
@@ -259,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityFloatingWindow.cancel();
         mUnityFloatingWindow = null;
         mUnityPlayer.resume();
+        return null;
     }
 
     protected void moveToFront() {
@@ -479,9 +478,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    private void testMethod(String param)
+    private String testMethod(String param)
     {
         Log.i(TAG, "testMethod, param: " + param);
+        return "oos";
     }
     private static void testMethodStatic(String param)
     {

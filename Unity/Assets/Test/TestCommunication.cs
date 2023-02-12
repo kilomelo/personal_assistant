@@ -15,19 +15,19 @@ public class TestCommunication : MonoBehaviour
         testButton.onClick.AddListener(() =>
         {
             Debug.Log("UnityTest on testBtn click");
-            using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            using AndroidJavaObject jo = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            jo.Call("runOnUiThread", new AndroidJavaRunnable(stopUnityGlobalFloatingWindow));
+            // using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            // using AndroidJavaObject jo = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            // jo.Call("runOnUiThread", new AndroidJavaRunnable(stopUnityGlobalFloatingWindow));
+            var result = AndroidBridge.Instance.CallSync("testMethod",
+                "key", "call registered method from unity");
+            Debug.Log("UnityTest testMethod result: " + result);
         });
         testButton2.onClick.AddListener(() =>
         {
             Debug.Log("UnityTest on testBtn2 click");
             // Camera.main.clearFlags = CameraClearFlags.SolidColor;
             // Camera.main.backgroundColor = new Color(0f, 0f, 0f, 0f);
-            AndroidBridge.Instance.CallSync("stopUnityGlobalFloatingWindow",
-                "floatArg", 1f,
-                "intArg", 3,
-                "stringArg", "txxt");
+            AndroidBridge.Instance.CallSyncOnUiThread("stopUnityGlobalFloatingWindow");
         });
     }
 

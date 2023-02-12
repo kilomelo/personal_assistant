@@ -31,62 +31,76 @@ public class AndroidBridge : MonoBehaviour
         }
     }
 
-    private AndroidJavaObject _unityPlayerJavaObject;
+    private AndroidJavaObject _unityBridgeObj;
 
-    public void CallSync(string methodName, params object[] args)
+    // 同步调用java方法
+    public string CallSync(string methodName, params object[] args)
     {
         Debug.Log($"{TAG} CallSync, method: {methodName}");
+        return _callSync(methodName, false, args);
+    }
+
+    // 同步调用java方法，在ui线程执行
+    public string CallSyncOnUiThread(string methodName, params object[] args)
+    {
+        Debug.Log($"{TAG} CallSyncOnUiThread, method: {methodName}");
+        return _callSync(methodName, true, args);
+    }
+
+    private string _callSync(string methodName, bool runOnUiThread, params object[] args)
+    {
         if (string.IsNullOrEmpty(methodName))
         {
             Debug.LogError($"{TAG} CallSync args invalid, code 0");
-            return;
+            return null;
         }
-        // if (args.Length % 2 != 0)
-        // {
-        //     Debug.LogError($"{TAG} CallSync args invalid, code 1");
-        //     return;
-        // }
+        if (args.Length % 2 != 0)
+        {
+            Debug.LogError($"{TAG} CallSync args invalid, code 1");
+            return null;
+        }
         #if UNITY_ANDROID && !UNITY_EDITOR
-        if (null == _unityPlayerJavaObject) TryGetUnityPlayer();
-        if (null != _unityPlayerJavaObject)
+        if (null == _unityBridgeObj) TryGetUnityBridge();
+        if (null != _unityBridgeObj)
         #endif
         {
-            var jsonStr = JsonMapper.ToJson(args);
-            // var jsonData = new JsonData();
-            // jsonData.Add(methodName);
-            // jsonData.Add(jsonStr);
-            // Debug.Log($"{jsonData.ToString()}");
-            // return;
-            // var jsonData = new JsonData();
-            // jsonData["methodName"] = methodName;
-            // Debug.Log($"{TAG} CallSync 1, jsonData: {jsonData}");
-            // for (var i = 0; i < args.Length; i += 2)
-            // {
-            //     if (args[i].GetType() != typeof(string))
-            //     {
-            //         Debug.LogError($"{TAG} CallSync args invalid, code 2");
-            //         return;
-            //     }
-            //     Debug.Log($"{TAG} argName: {args[i]}, type: {args[i + 1].GetType()}, value: {args[i + 1]}");
-            //     jsonData[(string)args[i]] = new JsonData(args[i + 1]);
-            //     // jsonData[(string)args[i]] = args[i + 1];
-            // }
-            // Debug.Log($"{TAG} CallSync, jsonData: {jsonData}");
+            var jsonData = new JsonData();
+            for (var i = 0; i < args.Length; i += 2)
+            {
+                if (args[i].GetType() != typeof(string))
+                {
+                    Debug.LogError($"{TAG} CallSync args invalid, code 2");
+                    return null;
+                }
+                Debug.Log($"{TAG} argName: {args[i]}, type: {args[i + 1].GetType()}, value: {args[i + 1]}");
+                if (args[i + 1].GetType() == typeof(float)) {
+                    var fValuae = (float)args[i + 1];
+                    jsonData[(string)args[i]] = new JsonData(fValuae);
+                }
+                else {
+                    jsonData[(string)args[i]] = new JsonData(args[i + 1]);
+                }
+            }
+            Debug.Log($"{TAG} CallSync, jsonData: {jsonData.ToJson()}");
             #if UNITY_ANDROID && !UNITY_EDITOR
-            // _unityPlayerJavaObject.Call("callFromUnitySync", methodName, jsonStr);
-            _unityPlayerJavaObject.Call("callFromUnitySync", methodName, jsonStr);
+            var javaMethodName = runOnUiThread ? "callFromUnitySyncOnUiThread" : "callFromUnitySync";
+            var returnValue = _unityBridgeObj.Call<string>(javaMethodName, methodName, jsonData.ToJson());
+            Debug.Log($"{TAG} CallSync, return {returnValue}");
+            return returnValue;
             #endif
         }
+        Debug.LogError($"{TAG} CallSync failed.");
+        return null;
     }
 
-    private void TryGetUnityPlayer()
+    private void TryGetUnityBridge()
     {
         try {
-            using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            _unityPlayerJavaObject = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            using var unityBridgeClass = new AndroidJavaClass("com.kilomelo.pa.unitybridge.UnityBridge");
+            _unityBridgeObj = unityBridgeClass.CallStatic<AndroidJavaObject>("getInstance");
         }
         catch (Exception e) {
-            Debug.LogError($"{TAG} get unity player instance failed.");
+            Debug.LogError($"{TAG} get unity bridge instance failed.");
             Debug.LogError(e);
         }
     }

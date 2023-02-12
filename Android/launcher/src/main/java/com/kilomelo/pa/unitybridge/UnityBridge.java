@@ -1,47 +1,90 @@
 package com.kilomelo.pa.unitybridge;
 
+import android.text.TextUtils;
 import android.util.Log;
-
 import com.kilomelo.pa.DebugUtils;
-
+import com.unity3d.player.UnityPlayer;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.function.Function;
 
 public class UnityBridge {
     private static String TAG = UnityBridge.class.getSimpleName();
-    private static UnityBridge instance;
+    private static UnityBridge mInstance;
     public static UnityBridge getInstance()
     {
-        if (null == instance) instance = new UnityBridge();
-        return instance;
+        if (null == mInstance) mInstance = new UnityBridge();
+        return mInstance;
     }
-    private Dictionary callbackDic;
+    private Dictionary<String, Function<String, String>> mCallbackDic;
+    private UnityPlayer mUnityPlayer;
+
+    public void init(UnityPlayer unityPlayer)
+    {
+        DebugUtils.MethodLog();
+        mUnityPlayer = unityPlayer;
+    }
     public void register(String name, Function<String, String> func)
     {
         Log.d(TAG, "register, name: " + name);
-        if (null == callbackDic) callbackDic = new Hashtable();
-        callbackDic.put(name, func);
+        if (null == mCallbackDic) mCallbackDic = new Hashtable<String, Function<String, String>>();
+        mCallbackDic.put(name, func);
     }
 
     public void unregister(String name)
     {
         Log.d(TAG, "unregister, name: " + name);
-        if (null == callbackDic) return;
-        callbackDic.remove(name);
+        if (null == mCallbackDic) return;
+        mCallbackDic.remove(name);
     }
-    public void callFromUnity(String methodName, String params)
+    private String callFromUnitySync(String methodName, String params)
     {
-        DebugUtils.MethodLog();
-        if (null == methodName)
+        Log.d(TAG, "callFromUnitySync, methodName: " + methodName + " params: " + params);
+        if (TextUtils.isEmpty(methodName))
         {
-            Log.e(TAG, "callFromUnity with null methodName");
-            return;
+            Log.e(TAG, "callFromUnitySync with null or empty methodName");
+            return null;
         }
-        Function<String, String> method = (Function<String, String>)callbackDic.get(methodName);
+        Function<String, String> method = mCallbackDic.get(methodName);
         if (null != method)
         {
-//            method.
+            return method.apply(params);
         }
+        else
+        {
+            Log.e(TAG, "method: " + methodName + " not registered.");
+        }
+        return null;
+    }
+
+    private String callFromUnitySyncOnUiThread(String methodName, String params)
+    {
+        Log.d(TAG, "callFromUnitySyncOnUiThread, methodName: " + methodName + " params: " + params);
+        if (TextUtils.isEmpty(methodName))
+        {
+            Log.e(TAG, "callFromUnitySyncOnUiThread with null or empty methodName");
+            return null;
+        }
+        Function<String, String> method = mCallbackDic.get(methodName);
+        if (null != method)
+        {
+            if (null == mUnityPlayer)
+            {
+                Log.e(TAG, "unity activity is null");
+                return null;
+            }
+            mUnityPlayer.currentActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    method.apply(params);
+                }
+            });
+            return null;
+        }
+        else
+        {
+            Log.e(TAG, "method: " + methodName + " not registered.");
+        }
+        return null;
     }
 }
