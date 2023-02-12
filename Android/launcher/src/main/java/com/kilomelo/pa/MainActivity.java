@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         DebugUtils.MethodLog();
         UnityBridge.getInstance().unregister("testMethod");
+        UnityBridge.getInstance().unregister("stopUnityGlobalFloatingWindow");
         if (null != mUnityPlayer) mUnityPlayer.destroy();
         super.onDestroy();
     }
