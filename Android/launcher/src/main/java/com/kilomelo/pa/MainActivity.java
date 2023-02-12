@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.gson.Gson;
 import com.hjq.toast.ToastUtils;
 import com.hjq.xtoast.XToast;
 import com.hjq.xtoast.draggable.MovingDraggable;
@@ -23,7 +22,9 @@ import com.hjq.xtoast.draggable.SpringDraggable;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
+import com.kilomelo.pa.persistentdata.PersistentData;
 import com.kilomelo.pa.unitybridge.UnityBridge;
+import com.kilomelo.pa.view.UnityFloatingWindow;
 import com.unity3d.player.MultiWindowSupport;
 import com.unity3d.player.UnityPlayer;
 
@@ -37,7 +38,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    private int mTaskId;
     private String mFullActivityName;
 
-    private UnityBridge mUnityBridge;
+    //region life cycle callback
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.showUFWBtn).setOnClickListener(this);
 
         mUnityPlayer = new UnityPlayer(this);
-        mUnityBridge = new UnityBridge();
+        UnityBridge unityBridge = new UnityBridge();
 
         mMainUnityWindow = findViewById(R.id.fm);
         mMainUnityWindow.addView(mUnityPlayer);
@@ -58,12 +60,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "mFullActivityName: " + mFullActivityName);
 //        mTaskId = getTaskId();
 
+        PersistentData.getInstance().init(this);
         UnityBridge.getInstance().init(mUnityPlayer);
         UnityBridge.getInstance().register("testMethod", this::testMethod);
         UnityBridge.getInstance().register("stopUnityGlobalFloatingWindow", this::stopUnityGlobalFloatingWindow);
     }
 
-    //region life cycle callback
     @Override protected void onDestroy ()
     {
         DebugUtils.MethodLog();
@@ -77,10 +79,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         super.onStop();
         DebugUtils.MethodLog();
-
         if (!MultiWindowSupport.getAllowResizableWindow(this))
             return;
-
         if (null != mUnityPlayer) mUnityPlayer.pause();
     }
 
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (MultiWindowSupport.getAllowResizableWindow(this))
             return;
         // 只有在非浮窗状态下才暂停Unity
-        if (null == mUnityFloatingWindow) {
+        if (null == mUnityFloatingWindow || !mUnityFloatingWindow.isShowing()) {
             if (null != mUnityPlayer) mUnityPlayer.pause();
         }
     }
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DebugUtils.MethodLog();
         Log.d(TAG, "hasFocus: " + hasFocus);
 
-        if (null == mUnityFloatingWindow)
+        if (null == mUnityFloatingWindow || !mUnityFloatingWindow.isShowing())
             if (null != mUnityPlayer) mUnityPlayer.windowFocusChanged(hasFocus);
     }
     //endregion
@@ -183,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         @Override
                         public void onGranted(List<String> granted, boolean all) {
                             startUnityGlobalFloatingWindow(getApplication());
+                            moveToBackground();
                         }
 
                         @Override
@@ -200,22 +201,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void startUnityGlobalFloatingWindow(Application application) {
         DebugUtils.MethodLog();
-        mUnityFloatingWindow = new UnityFloatingWindow(application);
-        // 传入 Application 表示这个是一个全局的 Toast
-        mUnityFloatingWindow.setContentView(R.layout.window_hint)
-                .setGravity(Gravity.END | Gravity.BOTTOM)
-//                .setYOffset(200)
-//                .setText(android.R.id.message, "Unity全局浮窗")
-                // 设置指定的拖拽规则
-                .setDraggable(new MovingDraggable())
-                .setOnClickListener(android.R.id.icon, new XToast.OnClickListener<ImageView>() {
-
-                    @Override
-                    public void onClick(XToast<?> toast, ImageView view) {
-                        ToastUtils.show("我被点击了");
-//                        toast.cancel();
-                    }
-                });
+        if (null == mUnityFloatingWindow) {
+            mUnityFloatingWindow = new UnityFloatingWindow(application);
+            // 传入 Application 表示这个是一个全局的 Toast
+            mUnityFloatingWindow.setContentView(R.layout.window_hint);
+            mUnityFloatingWindow.setHeight(400);
+            mUnityFloatingWindow.setWidth(400);
+        }
         mUnityPlayer.pause();
         if(mUnityPlayer.getParent() != null)
         {
@@ -228,8 +220,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e(TAG, "decorView of xtoast is null");
         }
         else decorView.addView(mUnityPlayer);
-        mUnityFloatingWindow.setHeight(400);
-        mUnityFloatingWindow.setWidth(400);
         mUnityPlayer.resume();
         mUnityPlayer.windowFocusChanged(true);
         mUnityFloatingWindow.show();
@@ -256,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mMainUnityWindow = findViewById(R.id.fm);
         mMainUnityWindow.addView(mUnityPlayer);
         mUnityFloatingWindow.cancel();
-        mUnityFloatingWindow = null;
+//        mUnityFloatingWindow = null;
         mUnityPlayer.resume();
         return null;
     }

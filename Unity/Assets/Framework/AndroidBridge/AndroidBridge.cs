@@ -33,6 +33,16 @@ public class AndroidBridge : MonoBehaviour
 
     private AndroidJavaObject _unityBridgeObj;
 
+    public void Register(string name, Action<string> method)
+    {
+
+    }
+
+    public void Unregister(string name)
+    {
+        
+    }
+
     // 同步调用java方法
     public string CallSync(string methodName, params object[] args)
     {
