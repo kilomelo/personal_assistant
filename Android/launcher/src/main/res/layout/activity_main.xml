@@ -12,8 +12,8 @@
         android:id="@+id/showUFWBtn"
         android:layout_width="151dp"
         android:layout_height="72dp"
-        android:layout_marginTop="56dp"
-        android:layout_marginEnd="228dp"
+        android:layout_marginTop="204dp"
+        android:layout_marginEnd="244dp"
         android:text="ShowUFW"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button" />
@@ -22,14 +22,11 @@
         android:id="@+id/button"
         android:layout_width="167dp"
         android:layout_height="62dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="220dp"
-        android:layout_marginBottom="57dp"
-        android:text="test toast"
+        android:layout_marginEnd="228dp"
+        android:layout_marginBottom="284dp"
+        android:text="set size big"
         app:layout_constraintBottom_toTopOf="@+id/fm"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button2"
-        app:layout_constraintVertical_bias="0.187" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/button2"
@@ -37,8 +34,8 @@
         android:layout_height="71dp"
         android:layout_gravity="bottom"
         android:layout_marginEnd="220dp"
-        android:layout_marginBottom="320dp"
-        android:text="call unity"
+        android:layout_marginBottom="188dp"
+        android:text="set size small"
         app:layout_constraintBottom_toTopOf="@+id/fm"
         app:layout_constraintEnd_toEndOf="parent" />
 

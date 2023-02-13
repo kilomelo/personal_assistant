@@ -164,14 +164,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DebugUtils.MethodLog();
 
         int viewId = view.getId();
-        if (viewId == R.id.button2) {
-            Log.i(TAG, "button2 clicked");
-            if (null != mUnityPlayer) mUnityPlayer.UnitySendMessage("AndroidBridge", "TestSetLabelText", "text from android");
-        }
-        else if (viewId == R.id.button)
+        if (viewId == R.id.button)
         {
             Log.i(TAG, "button clicked");
-            testXDialogCase(view);
+            if (null != mUnityFloatingWindow)
+            {
+                mUnityFloatingWindow.setWidth(500);
+                mUnityFloatingWindow.setHeight(800);
+                mUnityFloatingWindow.postUpdate();
+            }
+        }
+        else if (viewId == R.id.button2) {
+            Log.i(TAG, "button2 clicked");
+//            if (null != mUnityPlayer) mUnityPlayer.UnitySendMessage("AndroidBridge", "TestSetLabelText", "text from android");
+            if (null != mUnityFloatingWindow)
+            {
+                mUnityFloatingWindow.setWidth(200);
+                mUnityFloatingWindow.setHeight(200);
+                mUnityFloatingWindow.postUpdate();
+            }
         }
         else if (viewId == R.id.showUFWBtn)
         {
@@ -201,27 +212,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void startUnityGlobalFloatingWindow(Application application) {
         DebugUtils.MethodLog();
+        if (null == mUnityPlayer)
+        {
+            Log.e(TAG, "Unity player not exist.");
+            return;
+        }
         if (null == mUnityFloatingWindow) {
-            mUnityFloatingWindow = new UnityFloatingWindow(application);
             // 传入 Application 表示这个是一个全局的 Toast
-            mUnityFloatingWindow.setContentView(R.layout.window_hint);
-            mUnityFloatingWindow.setHeight(400);
-            mUnityFloatingWindow.setWidth(400);
+            mUnityFloatingWindow = new UnityFloatingWindow(application, mUnityPlayer);
         }
-        mUnityPlayer.pause();
-        if(mUnityPlayer.getParent() != null)
-        {
-            Log.d(TAG, "remove unity player from parent, parent: " + mUnityPlayer.getParent().toString());
-            ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
-        }
-        ViewGroup decorView = (ViewGroup)mUnityFloatingWindow.getDecorView();
-        if (null == decorView)
-        {
-            Log.e(TAG, "decorView of xtoast is null");
-        }
-        else decorView.addView(mUnityPlayer);
-        mUnityPlayer.resume();
-        mUnityPlayer.windowFocusChanged(true);
         mUnityFloatingWindow.show();
     }
 
@@ -235,19 +234,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (null == mUnityPlayer) {
             return null;
         }
-        mUnityPlayer.pause();
 
-        if(mUnityPlayer.getParent() != null)
-        {
-            Log.d(TAG, "remove unity player from parent, parent: " + mUnityPlayer.getParent().toString());
-            ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
-        }
-
-        mMainUnityWindow = findViewById(R.id.fm);
-        mMainUnityWindow.addView(mUnityPlayer);
-        mUnityFloatingWindow.cancel();
-//        mUnityFloatingWindow = null;
-        mUnityPlayer.resume();
+        mUnityFloatingWindow.freeUnity(mMainUnityWindow);
         return null;
     }
 
