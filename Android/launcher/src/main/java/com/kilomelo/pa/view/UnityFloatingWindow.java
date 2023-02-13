@@ -61,6 +61,8 @@ public class UnityFloatingWindow extends XToast {
         }
         if (null != mDraggable) mDraggable.relocate();
 
+        setSize(mCollapseWidth, mCollapseHeight);
+
         mUnityPlayer.pause();
         if(mUnityPlayer.getParent() != null)
         {
@@ -75,7 +77,7 @@ public class UnityFloatingWindow extends XToast {
         else decorView.addView(mUnityPlayer);
 
         mUnityPlayer.resume();
-//        mUnityPlayer.windowFocusChanged(true);
+        mUnityPlayer.windowFocusChanged(true);
     }
 
     @Override
@@ -101,9 +103,15 @@ public class UnityFloatingWindow extends XToast {
     public void setSize(int x, int y)
     {
         DebugUtils.methodLog("x: " + x + " y: " + y);
+//        if (null != mUnityPlayer) {
+//            mUnityPlayer.pause();
+//        }
         setWidth(x);
         setHeight(y);
         postUpdate();
+//        if (null != mUnityPlayer) {
+//            mUnityPlayer.resume();
+//        }
     }
     //region business
 
@@ -121,14 +129,14 @@ public class UnityFloatingWindow extends XToast {
         DebugUtils.methodLog();
         mState = State.expanded;
         setSize(mExpandWidth, mExpandHeight);
-        return null;
+        return UnityBridge.COMMON_SUCCEEDED;
     }
     private String collapse(String params)
     {
         DebugUtils.methodLog();
         mState = State.collapsed;
         setSize(mCollapseWidth, mCollapseHeight);
-        return null;
+        return UnityBridge.COMMON_SUCCEEDED;
     }
     //endregion
 }

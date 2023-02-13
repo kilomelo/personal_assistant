@@ -16,6 +16,10 @@ public class UnityBridge {
         if (null == mInstance) mInstance = new UnityBridge();
         return mInstance;
     }
+    // 通用成功返回值
+    public static String COMMON_SUCCEEDED = "COMMON_SUCCEEDED";
+    // 通用失败返回值
+    public static String COMMON_FAILED = "COMMON_FAILED";
     private Dictionary<String, Function<String, String>> mCallbackDic;
     private UnityPlayer mUnityPlayer;
 
@@ -43,7 +47,7 @@ public class UnityBridge {
         if (TextUtils.isEmpty(methodName))
         {
             Log.e(TAG, "callFromUnitySync with null or empty methodName");
-            return null;
+            return COMMON_FAILED;
         }
         Function<String, String> method = mCallbackDic.get(methodName);
         if (null != method)
@@ -54,7 +58,7 @@ public class UnityBridge {
         {
             Log.e(TAG, "method: " + methodName + " not registered.");
         }
-        return null;
+        return COMMON_FAILED;
     }
 
     private String callFromUnitySyncOnUiThread(String methodName, String params)
@@ -64,7 +68,7 @@ public class UnityBridge {
         if (TextUtils.isEmpty(methodName))
         {
             Log.e(TAG, "callFromUnitySyncOnUiThread with null or empty methodName");
-            return null;
+            return COMMON_FAILED;
         }
         Function<String, String> method = mCallbackDic.get(methodName);
         if (null != method)
@@ -72,7 +76,7 @@ public class UnityBridge {
             if (null == mUnityPlayer)
             {
                 Log.e(TAG, "unity activity is null");
-                return null;
+                return COMMON_FAILED;
             }
             mUnityPlayer.currentActivity.runOnUiThread(new Runnable() {
                 @Override
@@ -80,12 +84,12 @@ public class UnityBridge {
                     method.apply(params);
                 }
             });
-            return null;
+            return COMMON_SUCCEEDED;
         }
         else
         {
             Log.e(TAG, "method: " + methodName + " not registered.");
         }
-        return null;
+        return COMMON_FAILED;
     }
 }

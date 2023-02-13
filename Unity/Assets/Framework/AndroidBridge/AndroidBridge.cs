@@ -1,3 +1,4 @@
+#pragma warning disable 0162
 using UnityEngine;
 using System;
 using LitJson;
@@ -9,6 +10,10 @@ namespace Framework
     {
         private static string TAG = typeof(AndroidBridge).ToString();
         private static string GameObjectName = "AndroidBridge";
+        // 通用成功返回值
+        public static string COMMON_SUCCEEDED = "COMMON_SUCCEEDED";
+        // 通用失败返回值
+        public static string COMMON_FAILED = "COMMON_FAILED";
 
         private static AndroidBridge _instance;
 
@@ -113,6 +118,9 @@ namespace Framework
             var returnValue = _unityBridgeObj.Call<string>(javaMethodName, methodName, jsonData.ToJson());
             Debug.Log($"{TAG} CallSync, return {returnValue}");
             return returnValue;
+#endif
+#if UNITY_EDITOR
+            return AndroidBridge.COMMON_SUCCEEDED;
 #endif
             }
             Debug.LogError($"{TAG} CallSync failed.");

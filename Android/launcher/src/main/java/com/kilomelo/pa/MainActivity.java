@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         DebugUtils.methodLog();
+
+        mUnityPlayer = new UnityPlayer(this);
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.button2).setOnClickListener(this);
@@ -53,11 +55,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         PersistentData.getInstance().init(this);
         UnityBridge.getInstance().init(mUnityPlayer);
-        UnityBridge.getInstance().register("testMethod", this::testMethod);
+        UnityBridge.getInstance().register("startUnityGlobalFloatingWindow", this::startUnityGlobalFloatingWindow);
         UnityBridge.getInstance().register("stopUnityGlobalFloatingWindow", this::stopUnityGlobalFloatingWindow);
         UnityBridge.getInstance().register("syncSettings", this::syncSettings);
 
-        mUnityPlayer = new UnityPlayer(this);
         UnityBridge unityBridge = new UnityBridge();
 
         // 传入 Application 表示这个是一个全局的 Toast
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override protected void onDestroy ()
     {
         DebugUtils.methodLog();
-        UnityBridge.getInstance().unregister("testMethod");
+        UnityBridge.getInstance().unregister("startUnityGlobalFloatingWindow");
         UnityBridge.getInstance().unregister("stopUnityGlobalFloatingWindow");
         UnityBridge.getInstance().unregister("syncSettings");
         if (null != mUnityPlayer) mUnityPlayer.destroy();
@@ -185,8 +186,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         @Override
                         public void onGranted(List<String> granted, boolean all) {
-                            startUnityGlobalFloatingWindow();
-                            moveToBackground();
+//                            startUnityGlobalFloatingWindow();
+//                            moveToBackground();
                         }
 
                         @Override
@@ -202,32 +203,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void startUnityGlobalFloatingWindow() {
+    private String startUnityGlobalFloatingWindow(String params) {
         DebugUtils.methodLog();
-        if (null == mUnityPlayer)
-        {
-            Log.e(TAG, "Unity player not exist.");
-            return;
-        }
-        if (null == mUnityFloatingWindow) {
 
-        }
-        mUnityFloatingWindow.show();
+        XXPermissions.with(this)
+                .permission(Permission.SYSTEM_ALERT_WINDOW)
+                .request(new OnPermissionCallback() {
+                    @Override
+                    public void onGranted(List<String> granted, boolean all) {
+                        if (null == mUnityPlayer) {
+                            Log.e(TAG, "Unity player not inited.");
+                            return;
+                        }
+                        if (null == mUnityFloatingWindow) {
+                            Log.e(TAG, "mUnityFloatingWindow not inited.");
+                            return;
+                        }
+                        mUnityFloatingWindow.show();
+                        moveToBackground();
+                    }
+                    @Override
+                    public void onDenied(List<String> denied, boolean never) {
+                        new XToast<>(MainActivity.this)
+                                .setDuration(1000)
+                                .setContentView(R.layout.window_hint)
+                                .setImageDrawable(android.R.id.icon, R.mipmap.ic_dialog_tip_error)
+                                .setText(android.R.id.message, "请先授予悬浮窗权限")
+                                .show();
+                    }
+                });
+        return UnityBridge.COMMON_SUCCEEDED;
     }
 
     private String stopUnityGlobalFloatingWindow(String param) {
         DebugUtils.methodLog();
 
-        moveToFront();
-        if (null == mUnityFloatingWindow) {
-            return null;
-        }
         if (null == mUnityPlayer) {
-            return null;
+            Log.e(TAG, "Unity player not inited.");
+            return UnityBridge.COMMON_FAILED;
         }
-
+        if (null == mUnityFloatingWindow) {
+            Log.e(TAG, "mUnityFloatingWindow not inited.");
+            return UnityBridge.COMMON_FAILED;
+        }
+        moveToFront();
         mUnityFloatingWindow.freeUnity(mMainUnityWindow);
-        return null;
+        return UnityBridge.COMMON_SUCCEEDED;
     }
 
     protected void moveToFront() {
@@ -262,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         UnityGlobalSetting setting = new Gson().fromJson(params, UnityGlobalSetting.class);
         if (null == setting) {
             Log.e(TAG, "deserialize global setting failed");
-            return "failed";
+            return UnityBridge.COMMON_FAILED;
         }
         if (null != mUnityFloatingWindow)
         {
@@ -272,12 +293,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     setting.floatWindowExpandWidth,
                     setting.floatWindowExpandHeight
                     );
+            return UnityBridge.COMMON_SUCCEEDED;
         }
         else {
-            Log.e(TAG, "mUnityFloatingWindow not created");
-            return "failed";
+            Log.e(TAG, "mUnityFloatingWindow not inited");
+            return UnityBridge.COMMON_FAILED;
         }
-        return null;
     }
     //endregion
 

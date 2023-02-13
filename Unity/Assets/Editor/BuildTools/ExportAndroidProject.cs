@@ -111,7 +111,9 @@ namespace BaseProject.Editor
         {       
             var builtInScenes = new List<string> {
                 // 添加默认启动场景
-                _startScene };
+                _startScene,
+                "Assets/Scenes/fullScreenWindow.unity",
+                "Assets/Scenes/floatWindow.unity" };
 
             return builtInScenes.ToArray(); 
         }
