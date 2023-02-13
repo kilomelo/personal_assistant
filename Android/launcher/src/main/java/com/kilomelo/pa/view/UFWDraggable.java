@@ -36,12 +36,12 @@ public class UFWDraggable extends SpringDraggable {
 
     public void relocate()
     {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         updateLocation(mX, mY);
     }
     public void deserializeLocation()
     {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         SharedPreferences sharedPreferences = PersistentData.getInstance().getSharedPreferences();
         if (null != sharedPreferences)
         {
@@ -52,7 +52,7 @@ public class UFWDraggable extends SpringDraggable {
     }
     public void serializeLocation()
     {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         SharedPreferences sharedPreferences = PersistentData.getInstance().getSharedPreferences();
         if (null != sharedPreferences)
         {

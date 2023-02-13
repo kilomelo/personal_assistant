@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -43,15 +42,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.button2).setOnClickListener(this);
         findViewById(R.id.button).setOnClickListener(this);
         findViewById(R.id.showUFWBtn).setOnClickListener(this);
 
+        PersistentData.getInstance().init(this);
+        UnityBridge.getInstance().init(mUnityPlayer);
+        UnityBridge.getInstance().register("testMethod", this::testMethod);
+        UnityBridge.getInstance().register("stopUnityGlobalFloatingWindow", this::stopUnityGlobalFloatingWindow);
+
         mUnityPlayer = new UnityPlayer(this);
         UnityBridge unityBridge = new UnityBridge();
+
+        // 传入 Application 表示这个是一个全局的 Toast
+        mUnityFloatingWindow = new UnityFloatingWindow(getApplication(), mUnityPlayer);
 
         mMainUnityWindow = findViewById(R.id.fm);
         mMainUnityWindow.addView(mUnityPlayer);
@@ -59,16 +66,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFullActivityName = getPackageName().concat("/").concat(getClass().getName());
         Log.d(TAG, "mFullActivityName: " + mFullActivityName);
 //        mTaskId = getTaskId();
-
-        PersistentData.getInstance().init(this);
-        UnityBridge.getInstance().init(mUnityPlayer);
-        UnityBridge.getInstance().register("testMethod", this::testMethod);
-        UnityBridge.getInstance().register("stopUnityGlobalFloatingWindow", this::stopUnityGlobalFloatingWindow);
     }
 
     @Override protected void onDestroy ()
     {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         UnityBridge.getInstance().unregister("testMethod");
         UnityBridge.getInstance().unregister("stopUnityGlobalFloatingWindow");
         if (null != mUnityPlayer) mUnityPlayer.destroy();
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override protected void onStop()
     {
         super.onStop();
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         if (!MultiWindowSupport.getAllowResizableWindow(this))
             return;
         if (null != mUnityPlayer) mUnityPlayer.pause();
@@ -87,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override protected void onStart()
     {
         super.onStart();
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
 
         if (!MultiWindowSupport.getAllowResizableWindow(this))
             return;
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override protected void onPause()
     {
         super.onPause();
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
 
         if (MultiWindowSupport.getAllowResizableWindow(this))
             return;
@@ -111,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override protected void onResume()
     {
         super.onResume();
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
 
         if (MultiWindowSupport.getAllowResizableWindow(this))
             return;
@@ -122,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override public void onLowMemory()
     {
         super.onLowMemory();
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
 
         if (null != mUnityPlayer) mUnityPlayer.lowMemory();
     }
@@ -130,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override public void onTrimMemory(int level)
     {
         super.onTrimMemory(level);
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
 
         if (level == TRIM_MEMORY_RUNNING_CRITICAL)
         {
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override public void onConfigurationChanged(Configuration newConfig)
     {
         super.onConfigurationChanged(newConfig);
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
 
         if (null != mUnityPlayer) mUnityPlayer.configurationChanged(newConfig);
     }
@@ -151,8 +153,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override public void onWindowFocusChanged(boolean hasFocus)
     {
         super.onWindowFocusChanged(hasFocus);
-        DebugUtils.MethodLog();
-        Log.d(TAG, "hasFocus: " + hasFocus);
+        DebugUtils.methodLog("hasFocus: " + hasFocus);
 
         if (null == mUnityFloatingWindow || !mUnityFloatingWindow.isShowing())
             if (null != mUnityPlayer) mUnityPlayer.windowFocusChanged(hasFocus);
@@ -161,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
 
         int viewId = view.getId();
         if (viewId == R.id.button)
@@ -193,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         @Override
                         public void onGranted(List<String> granted, boolean all) {
-                            startUnityGlobalFloatingWindow(getApplication());
+                            startUnityGlobalFloatingWindow();
                             moveToBackground();
                         }
 
@@ -210,22 +211,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void startUnityGlobalFloatingWindow(Application application) {
-        DebugUtils.MethodLog();
+    private void startUnityGlobalFloatingWindow() {
+        DebugUtils.methodLog();
         if (null == mUnityPlayer)
         {
             Log.e(TAG, "Unity player not exist.");
             return;
         }
         if (null == mUnityFloatingWindow) {
-            // 传入 Application 表示这个是一个全局的 Toast
-            mUnityFloatingWindow = new UnityFloatingWindow(application, mUnityPlayer);
+
         }
         mUnityFloatingWindow.show();
     }
 
     private String stopUnityGlobalFloatingWindow(String param) {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
 
         moveToFront();
         if (null == mUnityFloatingWindow) {
@@ -240,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     protected void moveToFront() {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningTaskInfo> recentTasks = manager.getRunningTasks(Integer.MAX_VALUE);
         for (int i = 0; i < recentTasks.size(); i++) {
@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void moveToBackground()
     {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         moveTaskToBack(true);
     }
 

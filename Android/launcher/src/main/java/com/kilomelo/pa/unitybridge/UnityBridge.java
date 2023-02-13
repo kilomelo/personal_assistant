@@ -21,25 +21,25 @@ public class UnityBridge {
 
     public void init(UnityPlayer unityPlayer)
     {
-        DebugUtils.MethodLog();
+        DebugUtils.methodLog();
         mUnityPlayer = unityPlayer;
     }
     public void register(String name, Function<String, String> func)
     {
-        Log.d(TAG, "register, name: " + name);
+        DebugUtils.methodLog("name: " + name);
         if (null == mCallbackDic) mCallbackDic = new Hashtable<String, Function<String, String>>();
         mCallbackDic.put(name, func);
     }
 
     public void unregister(String name)
     {
-        Log.d(TAG, "unregister, name: " + name);
+        DebugUtils.methodLog("name: " + name);
         if (null == mCallbackDic) return;
         mCallbackDic.remove(name);
     }
     private String callFromUnitySync(String methodName, String params)
     {
-        Log.d(TAG, "callFromUnitySync, methodName: " + methodName + " params: " + params);
+        DebugUtils.methodLog("methodName: " + methodName + " params: " + params);
         if (TextUtils.isEmpty(methodName))
         {
             Log.e(TAG, "callFromUnitySync with null or empty methodName");
@@ -59,7 +59,8 @@ public class UnityBridge {
 
     private String callFromUnitySyncOnUiThread(String methodName, String params)
     {
-        Log.d(TAG, "callFromUnitySyncOnUiThread, methodName: " + methodName + " params: " + params);
+        DebugUtils.methodLog("methodName: " + methodName + " params: " + params);
+
         if (TextUtils.isEmpty(methodName))
         {
             Log.e(TAG, "callFromUnitySyncOnUiThread with null or empty methodName");
