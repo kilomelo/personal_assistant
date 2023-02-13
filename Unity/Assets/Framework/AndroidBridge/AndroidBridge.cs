@@ -7,7 +7,7 @@ namespace Framework
 
     public class AndroidBridge : MonoBehaviour
     {
-        private static string TAG = "AndroidBridge";
+        private static string TAG = typeof(AndroidBridge).ToString();
         private static string GameObjectName = "AndroidBridge";
 
         private static AndroidBridge _instance;

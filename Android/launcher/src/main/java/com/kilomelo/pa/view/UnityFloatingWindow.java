@@ -16,8 +16,20 @@ import com.unity3d.player.UnityPlayer;
 public class UnityFloatingWindow extends XToast {
     private static String TAG = UnityFloatingWindow.class.getSimpleName();
 
+    enum State
+    {
+        collapsed,
+        expanded,
+    }
+
     private UFWDraggable mDraggable;
     private UnityPlayer mUnityPlayer;
+    private int mCollapseWidth = 200;
+    private int mCollapseHeight = 200;
+    private int mExpandWidth = 400;
+    private int mExpandHeight = 600;
+    private State mState;
+
     public UnityFloatingWindow(Application application, UnityPlayer unityPlayer) {
         super(application);
         DebugUtils.methodLog();
@@ -33,6 +45,10 @@ public class UnityFloatingWindow extends XToast {
         setDraggable(mDraggable);
 
         mUnityPlayer = unityPlayer;
+        mState = State.collapsed;
+
+        UnityBridge.getInstance().register("expand", this::expand);
+        UnityBridge.getInstance().register("collapse", this::collapse);
     }
 
     @Override
@@ -82,17 +98,36 @@ public class UnityFloatingWindow extends XToast {
 //        mUnityPlayer.windowFocusChanged(true);
     }
 
+    public void setSize(int x, int y)
+    {
+        DebugUtils.methodLog("x: " + x + " y: " + y);
+        setWidth(x);
+        setHeight(y);
+        postUpdate();
+    }
     //region business
 
+    public void setConfig(int collapseWidth, int collapseHeight, int expandWidth, int expandHeight)
+    {
+        DebugUtils.methodLog("collapseWidth: " + collapseWidth + " collapseHeight: " + collapseHeight + " expandWidth: " + expandWidth + " expandHeight: " + expandHeight);
+        mCollapseWidth = collapseWidth;
+        mCollapseHeight = collapseHeight;
+        mExpandWidth = expandWidth;
+        mExpandHeight = expandHeight;
+    }
 
     private String expand(String params)
     {
-        DebugUtils.methodLog("params: " + params);
+        DebugUtils.methodLog();
+        mState = State.expanded;
+        setSize(mExpandWidth, mExpandHeight);
         return null;
     }
     private String collapse(String params)
     {
-        DebugUtils.methodLog("params: " + params);
+        DebugUtils.methodLog();
+        mState = State.collapsed;
+        setSize(mCollapseWidth, mCollapseHeight);
         return null;
     }
     //endregion

@@ -14,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.hjq.toast.ToastUtils;
 import com.hjq.xtoast.XToast;
 import com.hjq.xtoast.draggable.MovingDraggable;
@@ -27,6 +29,7 @@ import com.kilomelo.pa.view.UnityFloatingWindow;
 import com.unity3d.player.MultiWindowSupport;
 import com.unity3d.player.UnityPlayer;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -246,9 +249,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         moveTaskToBack(true);
     }
     //region business
+    class UnityGlobalSetting
+    {
+        public int floatWindowCollapseWidth;
+        public int floatWindowCollapseHeight;
+        public int floatWindowExpandWidth;
+        public int floatWindowExpandHeight;
+    }
     private String syncSettings(String params)
     {
         DebugUtils.methodLog("params: " + params);
+        UnityGlobalSetting setting = new Gson().fromJson(params, UnityGlobalSetting.class);
+        if (null == setting) {
+            Log.e(TAG, "deserialize global setting failed");
+            return "failed";
+        }
+        if (null != mUnityFloatingWindow)
+        {
+            mUnityFloatingWindow.setConfig(
+                    setting.floatWindowCollapseWidth,
+                    setting.floatWindowCollapseHeight,
+                    setting.floatWindowExpandWidth,
+                    setting.floatWindowExpandHeight
+                    );
+        }
+        else {
+            Log.e(TAG, "mUnityFloatingWindow not created");
+            return "failed";
+        }
         return null;
     }
     //endregion
