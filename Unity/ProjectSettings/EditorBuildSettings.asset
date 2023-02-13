@@ -4,5 +4,14 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/main.unity
+    guid: 58b5ccedc92463f45ac7943d7761494e
+  - enabled: 1
+    path: Assets/Scenes/fullScreenWindow.unity
+    guid: f605f2cf2ca714241ba10258d6855524
+  - enabled: 1
+    path: Assets/Scenes/floatWindow.unity
+    guid: e30f7fb3cdd47b4439c7f22c27f7d219
   m_configObjects: {}

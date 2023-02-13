@@ -22,8 +22,6 @@ public class UnityFloatingWindow extends XToast {
         super(application);
         DebugUtils.methodLog();
         setContentView(R.layout.window_unity_float);
-        setWidth(400);
-        setHeight(400);
         Log.d(TAG, "set window format to RGB_8888");
         WindowManager.LayoutParams layoutParams = getWindowParams();
         layoutParams.format = PixelFormat.RGBA_8888;
@@ -35,8 +33,6 @@ public class UnityFloatingWindow extends XToast {
         setDraggable(mDraggable);
 
         mUnityPlayer = unityPlayer;
-
-        UnityBridge.getInstance().register("syncSettings", this::syncSettings);
     }
 
     @Override
@@ -87,7 +83,14 @@ public class UnityFloatingWindow extends XToast {
     }
 
     //region business
-    private String syncSettings(String params)
+
+
+    private String expand(String params)
+    {
+        DebugUtils.methodLog("params: " + params);
+        return null;
+    }
+    private String collapse(String params)
     {
         DebugUtils.methodLog("params: " + params);
         return null;

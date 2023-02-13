@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String mFullActivityName;
 
     //region life cycle callback
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         UnityBridge.getInstance().init(mUnityPlayer);
         UnityBridge.getInstance().register("testMethod", this::testMethod);
         UnityBridge.getInstance().register("stopUnityGlobalFloatingWindow", this::stopUnityGlobalFloatingWindow);
+        UnityBridge.getInstance().register("syncSettings", this::syncSettings);
 
         mUnityPlayer = new UnityPlayer(this);
         UnityBridge unityBridge = new UnityBridge();
@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DebugUtils.methodLog();
         UnityBridge.getInstance().unregister("testMethod");
         UnityBridge.getInstance().unregister("stopUnityGlobalFloatingWindow");
+        UnityBridge.getInstance().unregister("syncSettings");
         if (null != mUnityPlayer) mUnityPlayer.destroy();
         super.onDestroy();
     }
@@ -168,22 +169,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (viewId == R.id.button)
         {
             Log.i(TAG, "button clicked");
-            if (null != mUnityFloatingWindow)
-            {
-                mUnityFloatingWindow.setWidth(500);
-                mUnityFloatingWindow.setHeight(800);
-                mUnityFloatingWindow.postUpdate();
-            }
         }
         else if (viewId == R.id.button2) {
             Log.i(TAG, "button2 clicked");
-//            if (null != mUnityPlayer) mUnityPlayer.UnitySendMessage("AndroidBridge", "TestSetLabelText", "text from android");
-            if (null != mUnityFloatingWindow)
-            {
-                mUnityFloatingWindow.setWidth(200);
-                mUnityFloatingWindow.setHeight(200);
-                mUnityFloatingWindow.postUpdate();
-            }
         }
         else if (viewId == R.id.showUFWBtn)
         {
@@ -257,6 +245,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DebugUtils.methodLog();
         moveTaskToBack(true);
     }
+    //region business
+    private String syncSettings(String params)
+    {
+        DebugUtils.methodLog("params: " + params);
+        return null;
+    }
+    //endregion
 
     //region test case
     private static int idx = 0;
