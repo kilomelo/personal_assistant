@@ -16,6 +16,7 @@ namespace Framework
                 return;
             }
             SceneManager.LoadSceneAsync(_firstScene, LoadSceneMode.Additive);
+            DontDestroyOnLoad(gameObject);
         }
     }
 }
