@@ -1,3 +1,4 @@
+using System;
 using Framework;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,20 +13,27 @@ namespace pANDa
 
         [SerializeField] private Button btn1;
         [SerializeField] private Button btn2;
+
+        private bool _readyToStartFloatWindow = false;
         // Start is called before the first frame update
         void Start()
         {
+            _readyToStartFloatWindow = false;
             btn1.onClick.AddListener(() =>
             {
                 Debug.Log($"{TAG} btn1 clicked");
-                var ret = AndroidBridge.Instance.CallSyncOnUiThread("startUnityGlobalFloatingWindow");
-                if (string.Compare(ret, AndroidBridge.COMMON_SUCCEEDED) == 0) {
-                    SceneManager.UnloadSceneAsync("fullScreenWindow");
-                    SceneManager.LoadSceneAsync("floatWindow", LoadSceneMode.Additive);
-                }
-                else {
-                    Debug.LogError($"{TAG} startUnityGlobalFloatingWindow failed, ret: {ret}");
-                }
+                AndroidBridge.Instance.CallAsyncOnAndroidUiThread("startUnityGlobalFloatingWindow", args =>
+                {
+                    Debug.Log($"{TAG} startUnityGlobalFloatingWindow callback, args: {args}");
+                    if (string.Compare(AndroidBridge.COMMON_SUCCEEDED, args, StringComparison.Ordinal) == 0)
+                    {
+                        _readyToStartFloatWindow = true;
+                    }
+                    else
+                    {
+                        Debug.LogError($"{TAG} startUnityGlobalFloatingWindow failed, result: {args}");
+                    }
+                });
             });
             btn2.onClick.AddListener(() =>
             {
@@ -33,6 +41,16 @@ namespace pANDa
                 // AndroidBridge.Instance.CallSync("collapse");
             });
             
+        }
+
+        private void Update()
+        {
+            if (_readyToStartFloatWindow)
+            {
+                Debug.Log($"{TAG} start float window");
+                SceneManager.UnloadSceneAsync("fullScreenWindow");
+                SceneManager.LoadSceneAsync("floatWindow", LoadSceneMode.Additive);
+            }
         }
     }
 }

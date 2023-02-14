@@ -25,6 +25,7 @@ import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
 import com.kilomelo.pa.persistentdata.PersistentData;
 import com.kilomelo.pa.unitybridge.UnityBridge;
+import com.kilomelo.pa.unitybridge.UnityCallback;
 import com.kilomelo.pa.view.UnityFloatingWindow;
 import com.unity3d.player.MultiWindowSupport;
 import com.unity3d.player.UnityPlayer;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         UnityBridge.getInstance().register("startUnityGlobalFloatingWindow", this::startUnityGlobalFloatingWindow);
         UnityBridge.getInstance().register("stopUnityGlobalFloatingWindow", this::stopUnityGlobalFloatingWindow);
         UnityBridge.getInstance().register("syncSettings", this::syncSettings);
+        UnityBridge.getInstance().register("testAsyncCallback", this::testAsyncCallback);
 
         UnityBridge unityBridge = new UnityBridge();
 
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         UnityBridge.getInstance().unregister("startUnityGlobalFloatingWindow");
         UnityBridge.getInstance().unregister("stopUnityGlobalFloatingWindow");
         UnityBridge.getInstance().unregister("syncSettings");
+        UnityBridge.getInstance().unregister("testAsyncCallback");
         if (null != mUnityPlayer) mUnityPlayer.destroy();
         super.onDestroy();
     }
@@ -203,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private String startUnityGlobalFloatingWindow(String params) {
+    private void startUnityGlobalFloatingWindow(UnityCallback callback, String params) {
         DebugUtils.methodLog();
 
         XXPermissions.with(this)
@@ -213,17 +216,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onGranted(List<String> granted, boolean all) {
                         if (null == mUnityPlayer) {
                             Log.e(TAG, "Unity player not inited.");
+                            if (null != callback) callback.apply(UnityBridge.COMMON_FAILED);
                             return;
                         }
                         if (null == mUnityFloatingWindow) {
                             Log.e(TAG, "mUnityFloatingWindow not inited.");
+                            if (null != callback) callback.apply(UnityBridge.COMMON_FAILED);
                             return;
                         }
+                        if (null != callback) callback.apply(UnityBridge.COMMON_SUCCEEDED);
                         mUnityFloatingWindow.show();
                         moveToBackground();
                     }
                     @Override
                     public void onDenied(List<String> denied, boolean never) {
+                        if (null != callback) callback.apply(UnityBridge.PERMISSION_DENIED);
                         new XToast<>(MainActivity.this)
                                 .setDuration(1000)
                                 .setContentView(R.layout.window_hint)
@@ -232,7 +239,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 .show();
                     }
                 });
-        return UnityBridge.COMMON_SUCCEEDED;
     }
 
     private String stopUnityGlobalFloatingWindow(String param) {
@@ -248,6 +254,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         moveToFront();
         mUnityFloatingWindow.freeUnity(mMainUnityWindow);
+
+        if (null != mTestAsyncCallbackUnityCallback) mTestAsyncCallbackUnityCallback.apply("Unity float window stopped");
         return UnityBridge.COMMON_SUCCEEDED;
     }
 
@@ -512,6 +520,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private String testString = "orig test string";
     private static String testStaticString = "orig test static string";
+
+    private UnityCallback mTestAsyncCallbackUnityCallback;
+    private void testAsyncCallback(UnityCallback callback, String params)
+    {
+        DebugUtils.methodLog("callback: " + callback + " params: " + params);
+        mTestAsyncCallbackUnityCallback = callback;
+    }
     //endregion
 //    /*API12*/ public boolean onGenericMotionEvent(MotionEvent event)  { return mUnityPlayer.injectEvent(event); }
 }

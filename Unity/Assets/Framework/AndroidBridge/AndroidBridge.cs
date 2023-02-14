@@ -1,6 +1,7 @@
 #pragma warning disable 0162
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 using LitJson;
 
 namespace Framework
@@ -43,6 +44,9 @@ namespace Framework
         }
 
         private AndroidJavaObject _unityBridgeObj;
+        private Proxy _proxy;
+        // 所有异步任务
+        private Dictionary<int, AsyncTask> _asyncTasks = new Dictionary<int, AsyncTask>();
 
         public void Register(string name, Action<string> method)
         {
@@ -51,39 +55,143 @@ namespace Framework
 
         public void Unregister(string name)
         {
+        }
+#region Async logic
 
+        public string CallAsync(string methodName, Proxy.Callback callback, params object[] args)
+        {
+            Debug.Log($"{TAG} CallAsync, method: {methodName}");
+            return _callAsync(false, methodName, callback, args);
+        }
+        public string CallAsyncOnAndroidUiThread(string methodName, Proxy.Callback callback, params object[] args)
+        {
+            Debug.Log($"{TAG} CallAsyncOnAndroidUiThread, method: {methodName}");
+            return _callAsync(true, methodName, callback, args);
+        }
+        private string _callAsync(bool runOnAndroidUiThread, string methodName, Proxy.Callback callback, params object[] args)
+        {
+            Debug.Log($"{TAG} CallAsync, method: {methodName}, callback: {callback}");
+            if (string.IsNullOrEmpty(methodName))
+            {
+                Debug.LogError($"{TAG} CallAsync args invalid, code 0");
+                return COMMON_FAILED;
+            }
+
+            if (args.Length % 2 != 0)
+            {
+                Debug.LogError($"{TAG} CallAsync args invalid, code 1");
+                return COMMON_FAILED;
+            }
+#if UNITY_ANDROID && !UNITY_EDITOR
+            if (null == _unityBridgeObj) TryGetUnityBridge();
+            if (null != _unityBridgeObj)
+#endif
+            {
+                var jsonData = new JsonData();
+                for (var i = 0; i < args.Length; i += 2)
+                {
+                    if (args[i].GetType() != typeof(string))
+                    {
+                        Debug.LogError($"{TAG} CallAsync args invalid, code 2");
+                        return COMMON_FAILED;
+                    }
+
+                    Debug.Log($"{TAG} argName: {args[i]}, type: {args[i + 1].GetType()}, value: {args[i + 1]}");
+                    if (jsonData.ContainsKey((string)args[i]))
+                    {
+                        Debug.LogError($"{TAG} CallAsync params name dumplicated, name: {args[i]}");
+                        continue;
+                    }
+                    // float 类型不知为何不饿能直接转为JsonData
+                    if (args[i + 1] is float)
+                    {
+                        var fValuae = (float)args[i + 1];
+                        jsonData[(string)args[i]] = new JsonData(fValuae);
+                    }
+                    else
+                    {
+                        jsonData[(string)args[i]] = new JsonData(args[i + 1]);
+                    }
+                }
+
+                Debug.Log($"{TAG} CallAsync, jsonData: {jsonData.ToJson()}");
+#if UNITY_ANDROID && !UNITY_EDITOR
+            var javaMethodName = runOnAndroidUiThread ? "callFromUnityAsyncOnUiThread" : "callFromUnityAsync";
+            var asyncTaskUid = _unityBridgeObj.Call<int>(javaMethodName, methodName, jsonData.ToJson());
+            Debug.Log($"{TAG} CallAsync, taskId: {asyncTaskUid}");
+
+            if (_asyncTasks.ContainsKey(asyncTaskUid))
+            {
+                Debug.LogError($"{TAG} create async task failed, uid dumplicated");
+                return COMMON_FAILED;
+            }
+            _asyncTasks[asyncTaskUid] = new AsyncTask()
+            {
+                Uid = asyncTaskUid,
+                Callback = callback
+            };
+            return COMMON_SUCCEEDED;
+#endif
+#if UNITY_EDITOR
+                return AndroidBridge.COMMON_SUCCEEDED;
+#endif
+            }
+            return COMMON_FAILED;
         }
 
+        private void AsyncCallbackHandler(int taskUid, string args)
+        {
+            Debug.Log($"{TAG} AsyncCallbackHandler, taskUid: {taskUid}, args: {args}");
+            if (_asyncTasks.TryGetValue(taskUid, out var task))
+            {
+                if (null != task.Callback)
+                {
+                    Debug.Log($"{TAG} AsyncCallbackHandler, invoke callback, taskUid: {taskUid}, args: {args}");
+                    task.Callback.Invoke(args);
+                }
+
+                _asyncTasks.Remove(taskUid);
+                return;
+            }
+            else
+            {
+                Debug.LogError($"{TAG} AsyncCallbackHandler get a wrong taskUid, cant find associatted task, taskUid: {taskUid}, args: {args}");
+                return;
+            }
+        }
+#endregion
+
+#region Sync logic
         // 同步调用java方法
         public string CallSync(string methodName, params object[] args)
         {
             Debug.Log($"{TAG} CallSync, method: {methodName}");
-            return _callSync(methodName, false, args);
+            return _callSync(false, methodName, args);
         }
 
         // 同步调用java方法，在ui线程执行
-        public string CallSyncOnUiThread(string methodName, params object[] args)
+        public string CallSyncOnAndroidUiThread(string methodName, params object[] args)
         {
-            Debug.Log($"{TAG} CallSyncOnUiThread, method: {methodName}");
-            return _callSync(methodName, true, args);
+            Debug.Log($"{TAG} CallSyncOnAndroidUiThread, method: {methodName}");
+            return _callSync(true, methodName, args);
         }
 
-        private string _callSync(string methodName, bool runOnUiThread, params object[] args)
+        private string _callSync(bool runOnAndroidUiThread, string methodName, params object[] args)
         {
             if (string.IsNullOrEmpty(methodName))
             {
                 Debug.LogError($"{TAG} CallSync args invalid, code 0");
-                return null;
+                return COMMON_FAILED;
             }
 
             if (args.Length % 2 != 0)
             {
                 Debug.LogError($"{TAG} CallSync args invalid, code 1");
-                return null;
+                return COMMON_FAILED;
             }
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (null == _unityBridgeObj) TryGetUnityBridge();
-        if (null != _unityBridgeObj)
+            if (null == _unityBridgeObj) TryGetUnityBridge();
+            if (null != _unityBridgeObj)
 #endif
             {
                 var jsonData = new JsonData();
@@ -92,7 +200,7 @@ namespace Framework
                     if (args[i].GetType() != typeof(string))
                     {
                         Debug.LogError($"{TAG} CallSync args invalid, code 2");
-                        return null;
+                        return COMMON_FAILED;
                     }
 
                     Debug.Log($"{TAG} argName: {args[i]}, type: {args[i + 1].GetType()}, value: {args[i + 1]}");
@@ -101,6 +209,7 @@ namespace Framework
                         Debug.LogError($"{TAG} CallSync params name dumplicated, name: {args[i]}");
                         continue;
                     }
+                    // float 类型不知为何不饿能直接转为JsonData
                     if (args[i + 1] is float)
                     {
                         var fValuae = (float)args[i + 1];
@@ -114,7 +223,7 @@ namespace Framework
 
                 Debug.Log($"{TAG} CallSync, jsonData: {jsonData.ToJson()}");
 #if UNITY_ANDROID && !UNITY_EDITOR
-            var javaMethodName = runOnUiThread ? "callFromUnitySyncOnUiThread" : "callFromUnitySync";
+            var javaMethodName = runOnAndroidUiThread ? "callFromUnitySyncOnUiThread" : "callFromUnitySync";
             var returnValue = _unityBridgeObj.Call<string>(javaMethodName, methodName, jsonData.ToJson());
             Debug.Log($"{TAG} CallSync, return {returnValue}");
             return returnValue;
@@ -124,8 +233,9 @@ namespace Framework
 #endif
             }
             Debug.LogError($"{TAG} CallSync failed.");
-            return null;
+            return COMMON_FAILED;
         }
+#endregion
 
         private void TryGetUnityBridge()
         {
@@ -141,14 +251,27 @@ namespace Framework
             }
         }
 
+        private void SetUnityCallback(Proxy proxy)
+        {
+            Debug.Log($"{TAG} SetUnityCallback, proxy: {proxy}");
+#if UNITY_ANDROID && !UNITY_EDITOR
+            if (null == _unityBridgeObj) TryGetUnityBridge();
+            if (null != _unityBridgeObj) {
+                _unityBridgeObj.Call("setUnityCallback", proxy);
+            } else {
+                Debug.LogError($"{TAG} get unity bridge instance failed.");
+            }
+#endif
+        }
 
 
         #region life cycle
 
-        // Start is called before the first frame update
         void Start()
         {
             Debug.Log($"{TAG} started");
+            _proxy = new Proxy(AsyncCallbackHandler);
+            SetUnityCallback(_proxy);
         }
 
         void OnApplicationFocus(bool hasFocus)
@@ -162,5 +285,11 @@ namespace Framework
         }
 
         #endregion
+
+        private struct AsyncTask
+        {
+            public int Uid;
+            public Proxy.Callback Callback;
+        }
     }
 }

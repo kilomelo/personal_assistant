@@ -28,7 +28,7 @@ public class TestCommunication : MonoBehaviour
             Debug.Log("UnityTest on testBtn2 click");
             // Camera.main.clearFlags = CameraClearFlags.SolidColor;
             // Camera.main.backgroundColor = new Color(0f, 0f, 0f, 0f);
-            AndroidBridge.Instance.CallSyncOnUiThread("stopUnityGlobalFloatingWindow");
+            AndroidBridge.Instance.CallSyncOnAndroidUiThread("stopUnityGlobalFloatingWindow");
         });
     }
 
