@@ -3,19 +3,26 @@ package com.kilomelo.pa;
 import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.hjq.bar.OnTitleBarListener;
+import com.hjq.bar.TitleBar;
 import com.hjq.toast.ToastUtils;
 import com.hjq.xtoast.XToast;
 import com.hjq.xtoast.draggable.MovingDraggable;
@@ -50,10 +57,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mUnityPlayer = new UnityPlayer(this);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.button2).setOnClickListener(this);
-        findViewById(R.id.button).setOnClickListener(this);
-        findViewById(R.id.showUFWBtn).setOnClickListener(this);
-
         PersistentData.getInstance().init(this);
         UnityBridge.getInstance().init(mUnityPlayer);
         UnityBridge.getInstance().register("startUnityGlobalFloatingWindow", this::startUnityGlobalFloatingWindow);
@@ -63,11 +66,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         UnityBridge unityBridge = new UnityBridge();
 
+        TitleBar titleBar = findViewById(R.id.tb_main_bar);
+        titleBar.setOnTitleBarListener(new OnTitleBarListener() {
+            @Override
+            public void onTitleClick(TitleBar titleBar) {
+                DebugUtils.methodLog();
+            }
+        });
+
         // 传入 Application 表示这个是一个全局的 Toast
         mUnityFloatingWindow = new UnityFloatingWindow(getApplication(), mUnityPlayer);
 
         mMainUnityWindow = findViewById(R.id.fm);
         mMainUnityWindow.addView(mUnityPlayer);
+        // 显示状态栏
+        Window window = getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
         mFullActivityName = getPackageName().concat("/").concat(getClass().getName());
         Log.d(TAG, "mFullActivityName: " + mFullActivityName);
@@ -173,37 +188,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DebugUtils.methodLog();
 
         int viewId = view.getId();
-        if (viewId == R.id.button)
-        {
-            Log.i(TAG, "button clicked");
-        }
-        else if (viewId == R.id.button2) {
-            Log.i(TAG, "button2 clicked");
-        }
-        else if (viewId == R.id.showUFWBtn)
-        {
-            Log.i(TAG, "show unity float window button clicked");
-            XXPermissions.with(this)
-                    .permission(Permission.SYSTEM_ALERT_WINDOW)
-                    .request(new OnPermissionCallback() {
 
-                        @Override
-                        public void onGranted(List<String> granted, boolean all) {
-//                            startUnityGlobalFloatingWindow();
-//                            moveToBackground();
-                        }
-
-                        @Override
-                        public void onDenied(List<String> denied, boolean never) {
-                            new XToast<>(MainActivity.this)
-                                    .setDuration(1000)
-                                    .setContentView(R.layout.window_hint)
-                                    .setImageDrawable(android.R.id.icon, R.mipmap.ic_dialog_tip_error)
-                                    .setText(android.R.id.message, "请先授予悬浮窗权限")
-                                    .show();
-                        }
-                    });
-        }
     }
 
     private void startUnityGlobalFloatingWindow(UnityCallback callback, String params) {

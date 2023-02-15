@@ -8,11 +8,11 @@
     <!--忽略电池优化权限-->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <supports-screens
-        android:anyDensity="true"
         android:largeScreens="true"
         android:normalScreens="true"
         android:smallScreens="true"
-        android:xlargeScreens="true" />
+        android:xlargeScreens="true"
+        android:anyDensity="true"/>
 
     <application
         android:name=".AppApplication"
