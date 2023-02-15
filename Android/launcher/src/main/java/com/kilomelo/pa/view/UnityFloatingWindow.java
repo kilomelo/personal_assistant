@@ -47,8 +47,8 @@ public class UnityFloatingWindow extends XToast {
         mUnityPlayer = unityPlayer;
         mState = State.collapsed;
 
-        UnityBridge.getInstance().register("expand", this::expand);
-        UnityBridge.getInstance().register("collapse", this::collapse);
+//        UnityBridge.getInstance().register("expand", this::expand);
+//        UnityBridge.getInstance().register("collapse", this::collapse);
     }
 
     @Override

@@ -12,6 +12,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         UnityBridge.getInstance().register("startUnityGlobalFloatingWindow", this::startUnityGlobalFloatingWindow);
         UnityBridge.getInstance().register("stopUnityGlobalFloatingWindow", this::stopUnityGlobalFloatingWindow);
         UnityBridge.getInstance().register("syncSettings", this::syncSettings);
-        UnityBridge.getInstance().register("testAsyncCallback", this::testAsyncCallback);
+        UnityBridge.getInstance().register("onUnityReady", this::onUnityReady);
 
         UnityBridge unityBridge = new UnityBridge();
 
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mMainUnityWindow = findViewById(R.id.fm);
         mMainUnityWindow.addView(mUnityPlayer);
+        mMainUnityWindow.setAlpha(0f);
         // 显示状态栏
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -95,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         UnityBridge.getInstance().unregister("startUnityGlobalFloatingWindow");
         UnityBridge.getInstance().unregister("stopUnityGlobalFloatingWindow");
         UnityBridge.getInstance().unregister("syncSettings");
-        UnityBridge.getInstance().unregister("testAsyncCallback");
+        UnityBridge.getInstance().unregister("onUnityReady");
         if (null != mUnityPlayer) mUnityPlayer.destroy();
         super.onDestroy();
     }
@@ -127,10 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (MultiWindowSupport.getAllowResizableWindow(this))
             return;
-        // 只有在非浮窗状态下才暂停Unity
-        if (null == mUnityFloatingWindow || !mUnityFloatingWindow.isShowing()) {
-            if (null != mUnityPlayer) mUnityPlayer.pause();
-        }
+        if (null != mUnityPlayer) mUnityPlayer.pause();
     }
 
     @Override protected void onResume()
@@ -140,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (MultiWindowSupport.getAllowResizableWindow(this))
             return;
-
         if (null != mUnityPlayer) mUnityPlayer.resume();
     }
 
@@ -178,15 +177,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onWindowFocusChanged(hasFocus);
         DebugUtils.methodLog("hasFocus: " + hasFocus);
 
-        if (null == mUnityFloatingWindow || !mUnityFloatingWindow.isShowing())
-            if (null != mUnityPlayer) mUnityPlayer.windowFocusChanged(hasFocus);
+        if (null != mUnityPlayer) mUnityPlayer.windowFocusChanged(hasFocus);
     }
     //endregion
 
+    private String onUnityReady(String params)
+    {
+        DebugUtils.methodLog();
+        if (null != mMainUnityWindow) {
+            mMainUnityWindow.setAlpha(1f);
+        }
+        return UnityBridge.COMMON_SUCCEEDED;
+    }
     @Override
     public void onClick(View view) {
         DebugUtils.methodLog();
-
         int viewId = view.getId();
 
     }
