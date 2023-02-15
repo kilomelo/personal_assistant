@@ -24,6 +24,15 @@ namespace BaseProject.Editor
             Copy2AndroidProject();
         }
 
+        [MenuItem("Build/Clean android project cache %#e", priority = 1)]
+        public static void Clean()
+        {
+            var destPath = Path.Combine(_androidProjectRelativePath, "unityLibrary");
+            FileTools.DeleteFolder(_exportProjectTempDirRelativePath);
+            FileTools.DeleteFolder(destPath);
+            Debug.Log($"ExportAndroidProject.Clean, buildPath: [{_exportProjectTempDirRelativePath}], destPath: [{destPath}]");
+        }
+
         private static void Build(string exportPath, bool enableDevelopment, bool useMono, bool debug)
         {
             if (!useMono && debug)
@@ -98,7 +107,7 @@ namespace BaseProject.Editor
         {
             var srcPath = Path.Combine(_exportProjectTempDirRelativePath, "unityLibrary");
             var destPath = Path.Combine(_androidProjectRelativePath, "unityLibrary");
-            Debug.Log($"ExportAndroidProject.Copy2AndroidProject, srcPath: {srcPath}, destPath: {destPath}");
+            Debug.Log($"ExportAndroidProject.Copy2AndroidProject, srcPath: [{srcPath}], destPath: [{destPath}]");
             FileTools.DeleteFolder(destPath);
             FileTools.CheckAndCreateFolder(destPath);
             FileTools.CopyDirectory(srcPath, destPath);
