@@ -121,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
 
         if (null != mUnityPlayer) mUnityPlayer.resume();
+
+        LoadingSplash.startActivity(this);
     }
 
     @Override protected void onPause()
